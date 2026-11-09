@@ -1,5 +1,8 @@
-mod echo;
-mod hero;
+mod birds;
+pub use birds::Birds;
 
-pub use echo::Echo;
-pub use hero::Hero;
+mod dashboard;
+pub use dashboard::Dashboard;
+
+mod money;
+pub use money::Money;

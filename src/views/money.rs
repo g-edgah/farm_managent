@@ -5,8 +5,8 @@ use dioxus::prelude::*;
 pub fn Money() -> Element {
     rsx! {
 
-        div {
-            "blog"
+        div { class: "bg-purple-100 h-screen w-screen p-5",
+            "money"
 
             // Content
             h1 { "This is blog !" }

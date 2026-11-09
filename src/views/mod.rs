@@ -19,3 +19,6 @@ pub use birds::Birds;
 
 mod settings;
 pub use settings::Settings;
+
+mod batch;
+pub use batch::Batch;
