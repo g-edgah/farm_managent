@@ -1,4 +1,5 @@
 mod auth;
+
 pub use auth::register_user;
 
 #[cfg(feature = "server")]

@@ -1,8 +1,12 @@
-use super::DATABASE;
-use argon2::{Argon2, PasswordHasher};
 use dioxus::prelude::*;
 
-#[server]
+#[cfg(feature = "server")]
+use super::DATABASE;
+
+#[cfg(feature = "server")]
+use argon2::{Argon2, PasswordHasher};
+
+#[post("/api/auth/register")]
 pub async fn register_user(
     username: String,
     password: String,

@@ -3,7 +3,6 @@ use dioxus::prelude::*;
 mod components;
 mod views;
 
-#[cfg(feature = "server")]
 mod server;
 
 use components::Navbar;
@@ -47,7 +46,7 @@ fn main() {
     #[cfg(feature = "server")]
     dioxus::serve(|| async move {
         dotenvy::dotenv().ok();
-        let router = dioxus::server::router(app);
+        let router = dioxus::server::router(App);
         Ok(router)
     })
 }
