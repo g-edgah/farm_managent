@@ -22,22 +22,30 @@ pub fn Register() -> Element {
 
         if details.username.trim().len() < 3 {
             error.set(Some("username must be at least 3 chaacters".into()));
+            dioxus_logger::tracing::info!("username fail");
             return;
         }
 
+        dioxus_logger::tracing::info!("username pass");
         //password length
         if details.password.trim().len() < 8 {
             error.set(Some(
                 "password cannot be less than 8 characters long".into(),
             ));
+            dioxus_logger::tracing::info!("pass fail");
             return;
         }
+
+        dioxus_logger::tracing::info!("pass pass");
 
         //password length
         if details.password.trim() != details.confirm_password.trim() {
             error.set(Some("passwords provided do not match".into()));
+            dioxus_logger::tracing::info!("confirm fail");
             return;
         }
+
+        dioxus_logger::tracing::info!("confirm pass");
 
         //if validation checks are passed
         error.set(None);
@@ -49,8 +57,12 @@ pub fn Register() -> Element {
                 Ok(()) => {
                     success.set(true);
                     reg_details.set(RegDetails::default());
+                    dioxus_logger::tracing::info!("server pass");
                 }
-                Err(e) => error.set(Some(e.to_string())),
+                Err(e) => {
+                    error.set(Some(e.to_string()));
+                    dioxus_logger::tracing::info!("server fail");
+                }
             }
             submitting.set(false);
         });
