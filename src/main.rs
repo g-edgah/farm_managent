@@ -2,6 +2,7 @@ use dioxus::prelude::*;
 
 mod components;
 
+mod server;
 mod views;
 
 use components::Navbar;
