@@ -164,9 +164,9 @@ pub async fn user_logout() -> Result<(), ServerFnError> {
 
 // periodic clearing of old sessions
 #[cfg(feature = "server")]
-fn spawn_session_cleanup() {
+pub fn spawn_session_cleanup() {
     tokio::spawn(async move {
-        let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(3600));
+        let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(3600)); // checks every hour
         loop {
             interval.tick().await;
             if let Ok(_) = sqlx::query("DELETE FROM sessions WHERE expires_at <NOW()")
@@ -174,6 +174,8 @@ fn spawn_session_cleanup() {
                 .await
             {
                 dioxus_logger::tracing::info!("cleaned expired sessions");
+            } else {
+                dioxus_logger::tracing::info!("failed to clean up expired sessions");
             }
         }
     });
