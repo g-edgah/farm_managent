@@ -1,13 +1,16 @@
 use dioxus::prelude::*;
 
+#[cfg(feature = "server")]
 use dioxus_cookie::{CookieOptions, SameSite};
+
+#[cfg(feature = "server")]
 use std::time::Duration;
 
 #[cfg(feature = "server")]
 use super::DATABASE;
 
 #[cfg(feature = "server")]
-use argon2::{Argon2, PasswordHasher};
+use argon2::{Argon2, PasswordHasher, PasswordVerifier};
 
 // register
 #[post("/api/auth/register")]
@@ -42,7 +45,6 @@ pub async fn register_user(
         .to_string();
 
     //database operation
-
     sqlx::query("INSERT INTO users (username, password_hash) VALUES ($1, $2)")
         .bind(&username)
         .bind(&hash)
@@ -50,11 +52,11 @@ pub async fn register_user(
         .await
         .map_err(|e| {
             if e.to_string().contains("duplicate key") {
-                ServerFnError::new("Username unavailable");
                 dioxus_logger::tracing::info!("db error during registration: {e}");
+                ServerFnError::new("Username unavailable")
             } else {
                 dioxus_logger::tracing::info!("db error during registration: {e}");
-                ServerFnError::new("Could not create account");
+                ServerFnError::new("Could not create account")
             }
         })?;
 
@@ -88,7 +90,7 @@ pub async fn user_login(
     let row: Option<(i32, String)> =
         sqlx::query_as("SELECT password_hash FROM users WHERE username = $1")
             .bind(&username)
-            .fetch_optional(&DATABASE)
+            .fetch_optional(&*DATABASE)
             .await
             .map_err(|e| {
                 dioxus_logger::tracing::info!("db error during registration: {e}");
@@ -110,14 +112,14 @@ pub async fn user_login(
     //delete existing sessions before issuing a new one
     sqlx::query("DELETE FROM sessions WHERE user_id = $1")
         .bind(user_id)
-        .execute(&DATABASE)
+        .execute(&*DATABASE)
         .await
         .map_err(|e| ServerFnError::new(e.to_string()))?;
 
     //session isuing
     // generating cookie
     let token = uuid::Uuid::new_v4().to_string();
-    let max_age_secs = 7 * 24 * 3600; // a week
+    let max_age_secs: i64 = 7 * 24 * 3600; // a week
 
     //storing new session
     sqlx::query(
@@ -126,7 +128,7 @@ pub async fn user_login(
         .bind(&token)
         .bind(user_id)
         .bind(max_age_secs)
-        .execute(&DATABASE)
+        .execute(&*DATABASE)
         .await
         .map_err(|e| ServerFnError::new("failed to save session")
     )?;
@@ -135,7 +137,7 @@ pub async fn user_login(
         "session",
         &token,
         &CookieOptions {
-            max_age: Some(Duration::from_secs(max_age_secs)),
+            max_age: Some(Duration::from_secs(max_age_secs as u64)),
             http_only: true,             // anti xss
             secure: true,                // https only. anti-MITM attacks
             same_site: SameSite::Strict, // anti CSRF

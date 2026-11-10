@@ -48,6 +48,8 @@ fn main() {
     #[cfg(feature = "server")]
     dioxus::serve(|| async move {
         dotenvy::dotenv().ok();
+        let _ = &*server::DATABASE;
+        server::spawn_session_cleanup();
         let router = dioxus::server::router(App);
         Ok(router)
     })
