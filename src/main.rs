@@ -1,9 +1,10 @@
 use dioxus::prelude::*;
 
 mod components;
-
-mod server;
 mod views;
+
+#[cfg(feature = "server")]
+mod server;
 
 use components::Navbar;
 use views::{Batch, Birds, Home, Money, Profile, Settings};
@@ -40,7 +41,15 @@ const FAVICON: Asset = asset!("/assets/favicon.ico");
 const TAILWIND_CSS: Asset = asset!("/assets/tailwind.css");
 
 fn main() {
+    #[cfg(not(feature = "server"))]
     dioxus::launch(App);
+
+    #[cfg(feature = "server")]
+    dioxus::serve(|| async move {
+        dotenvy::dotenv().ok();
+        let router = dioxus::server::router(app);
+        Ok(router)
+    })
 }
 
 #[component]

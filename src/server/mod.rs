@@ -5,7 +5,7 @@ pub use auth::register_user;
 use dioxus::prelude::*;
 
 #[cfg(feature = "server")]
-use dioxus::prelude::Lazy;
+use dioxus::fullstack::Lazy;
 
 #[cfg(feature = "server")]
 pub static DATABASE: Lazy<sqlx::PgPool> = Lazy::new(|| async move {
