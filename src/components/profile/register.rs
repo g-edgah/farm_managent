@@ -5,7 +5,7 @@ use dioxus::prelude::*;
 pub fn Register() -> Element {
     let mut page = use_signal(|| "register");
     let mut register = use_signal(|| "");
-    let mut login = use_signal(|| "");
+    let mut login_details = use_signal(|| LoginDetails::default());
     let mut reg_details = use_signal(|| RegDetails::default());
     let mut error = use_signal(|| None::<String>);
     let mut submitting = use_signal(|| false);
@@ -18,34 +18,24 @@ pub fn Register() -> Element {
         // username length
         let details = reg_details();
 
-        dioxus_logger::tracing::info!("{:?}", details);
-
         if details.username.trim().len() < 3 {
             error.set(Some("username must be at least 3 chaacters".into()));
-            dioxus_logger::tracing::info!("username fail");
             return;
         }
 
-        dioxus_logger::tracing::info!("username pass");
         //password length
         if details.password.trim().len() < 8 {
             error.set(Some(
                 "password cannot be less than 8 characters long".into(),
             ));
-            dioxus_logger::tracing::info!("pass fail");
             return;
         }
-
-        dioxus_logger::tracing::info!("pass pass");
 
         //password length
         if details.password.trim() != details.confirm_password.trim() {
             error.set(Some("passwords provided do not match".into()));
-            dioxus_logger::tracing::info!("confirm fail");
             return;
         }
-
-        dioxus_logger::tracing::info!("confirm pass");
 
         //if validation checks are passed
         error.set(None);
@@ -57,11 +47,9 @@ pub fn Register() -> Element {
                 Ok(()) => {
                     success.set(true);
                     reg_details.set(RegDetails::default());
-                    dioxus_logger::tracing::info!("server pass");
                 }
                 Err(e) => {
                     error.set(Some(e.to_string()));
-                    dioxus_logger::tracing::info!("server fail");
                 }
             }
             submitting.set(false);
@@ -135,12 +123,63 @@ pub fn Register() -> Element {
                 }
             }
         } else if page() == "login" {
-            div { class: "bg-purple-100",
-                div { class: "bg-purple-300 w-130 h-150 rounded-md",
-                    span { "log in" }
+            div { class: "bg-purple-100 flex flex-col gap-5",
+                div { class: "w-full text-center",
+                    span { class: "text-xl font-bold", "Log in" }
                 }
-                div { class: "flex gap-2",
-                    span { "already have an account?" }
+                div { class: "bg-purple-200 pt-17 pb-10 px-5 w-110 rounded-md",
+                    form { class: "flex flex-col gap-10", onsubmit: onsubmit_reg,
+                        div { class: "username flex flex-col gap-3",
+
+                            span { class: "pl-1 text-lg font-semibold", "username" }
+
+                            input {
+                                class: "rounded-md border border-gray-300 bg-purple-100 px-3 h-10",
+                                r#type: "text",
+                                placeholder: "enter username",
+                                value: "{login_details.read().username}",
+                                oninput: move |e| login_details.with_mut(|d| d.username = e.value()),
+                            }
+                        }
+                        div { class: "password flex flex-col gap-3",
+
+                            span { class: "pl-1 text-lg font-semibold", "password" }
+
+                            input {
+                                class: "rounded-md border border-gray-300 bg-purple-100 px-3 h-10",
+                                r#type: "text",
+                                placeholder: "********",
+                                value: "{login_details.read().password}",
+                                oninput: move |e| login_details.with_mut(|d| d.password = e.value()),
+                            }
+                        }
+
+                        div { class: "remember flex gap-3 justify-start items-center",
+
+                            input {
+                                class: "rounded-md border border-gray-300 bg-purple-100 px-3 h-10",
+                                r#type: "checkbox",
+                                value: "{login_details.read().password}",
+                                onchange: move |e| {
+                                    login_details.with_mut(|d| d.remember = e.checked());
+                                },
+                            }
+                            span { class: "pl-1", "remember me" }
+                        }
+
+                        div { class: "mt-4 w-full flex justify-center items-center",
+
+                            button {
+                                r#type: "submit",
+                                class: "hover:bg-purple-400 w-30 h-10 bg-purple-300 rounded-md",
+                                span { class: "text-lg font-semibold", "submit" }
+                            }
+                        }
+
+                    }
+                }
+                div { class: "flex gap-3",
+                    span { "don't have an account yet?" }
                     button {
                         class: "cursor-pointer",
                         onclick: move |_| { page.set("register") },
@@ -163,5 +202,5 @@ pub struct RegDetails {
 pub struct LoginDetails {
     pub username: String,
     pub password: String,
-    //pub remember: Bool,
+    pub remember: bool,
 }
