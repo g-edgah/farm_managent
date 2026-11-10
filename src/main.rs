@@ -40,6 +40,8 @@ const FAVICON: Asset = asset!("/assets/favicon.ico");
 const TAILWIND_CSS: Asset = asset!("/assets/tailwind.css");
 
 fn main() {
+    dioxus_logger::init(dioxus_logger::tracing::Level::INFO).expect("failed to init logger");
+
     #[cfg(not(feature = "server"))]
     dioxus::launch(App);
 

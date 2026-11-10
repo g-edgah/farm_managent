@@ -6,7 +6,7 @@ pub fn Register() -> Element {
     let mut page = use_signal(|| "register");
     let mut register = use_signal(|| "");
     let mut login = use_signal(|| "");
-    let mut reg_details = use_signal(|| RegDetails::default);
+    let mut reg_details = use_signal(|| RegDetails::default());
     let mut error = use_signal(|| None::<String>);
     let mut submitting = use_signal(|| false);
     let mut success = use_signal(|| false);
@@ -17,13 +17,16 @@ pub fn Register() -> Element {
         // input validation
         // username length
         let details = reg_details();
-        if details().username.trim().len() < 3 {
+
+        dioxus_logger::tracing::info!("{:?}", details);
+
+        if details.username.trim().len() < 3 {
             error.set(Some("username must be at least 3 chaacters".into()));
             return;
         }
 
         //password length
-        if details().password.trim().len() < 8 {
+        if details.password.trim().len() < 8 {
             error.set(Some(
                 "password cannot be less than 8 characters long".into(),
             ));
@@ -31,7 +34,7 @@ pub fn Register() -> Element {
         }
 
         //password length
-        if details().password.trim() != details().confirm_password.trim() {
+        if details.password.trim() != details.confirm_password.trim() {
             error.set(Some("passwords provided do not match".into()));
             return;
         }
@@ -41,16 +44,11 @@ pub fn Register() -> Element {
         submitting.set(true);
 
         spawn(async move {
-            match register_user(
-                details().username,
-                details().password,
-                details().confirm_password,
-            )
-            .await
+            match register_user(details.username, details.password, details.confirm_password).await
             {
                 Ok(()) => {
                     success.set(true);
-                    reg_details.set(RegDetails::default);
+                    reg_details.set(RegDetails::default());
                 }
                 Err(e) => error.set(Some(e.to_string())),
             }
@@ -74,8 +72,8 @@ pub fn Register() -> Element {
                                 class: "rounded-md border border-gray-300 bg-purple-100 px-3 h-10",
                                 r#type: "text",
                                 placeholder: "enter username",
-                                value: (reg_details.read())().username.clone(),
-                                oninput: move |e| { reg_details.with_mut(|d| d().username = e.value()) },
+                                value: "{reg_details.read().username}",
+                                oninput: move |e| reg_details.with_mut(|d| d.username = e.value()),
                             }
                         }
                         div { class: "password flex flex-col gap-3",
@@ -86,8 +84,8 @@ pub fn Register() -> Element {
                                 class: "rounded-md border border-gray-300 bg-purple-100 px-3 h-10",
                                 r#type: "text",
                                 placeholder: "********",
-                                value: (reg_details.read())().password.clone(),
-                                oninput: move |e| { reg_details.with_mut(|d| d().password = e.value()) },
+                                value: "{reg_details.read().password}",
+                                oninput: move |e| reg_details.with_mut(|d| d.password = e.value()),
                             }
                         }
 
@@ -99,14 +97,16 @@ pub fn Register() -> Element {
                                 class: "rounded-md border border-gray-300 bg-purple-100 px-3 h-10",
                                 r#type: "text",
                                 placeholder: "********",
-                                value: (reg_details.read())().confirm_password.clone(),
-                                oninput: move |e| { reg_details.with_mut(|d| d().confirm_password = e.value()) },
+                                value: "{reg_details.read().confirm_password}",
+                                oninput: move |e| reg_details.with_mut(|d| d.confirm_password = e.value()),
                             }
                         }
 
                         div { class: "mt-7 w-full flex justify-center items-center",
 
-                            button { class: "w-30 h-10 bg-purple-300 rounded-md",
+                            button {
+                                r#type: "submit",
+                                class: "hover:bg-purple-400 w-30 h-10 bg-purple-300 rounded-md",
                                 span { class: "text-lg font-semibold", "submit" }
                             }
                         }
