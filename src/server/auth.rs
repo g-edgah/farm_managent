@@ -9,6 +9,7 @@ use super::DATABASE;
 #[cfg(feature = "server")]
 use argon2::{Argon2, PasswordHasher};
 
+// register
 #[post("/api/auth/register")]
 pub async fn register_user(
     username: String,
@@ -60,6 +61,7 @@ pub async fn register_user(
     Ok(())
 }
 
+// login
 #[post("/api/auth/login")]
 pub async fn user_login(
     username: String,
@@ -105,12 +107,19 @@ pub async fn user_login(
         .verify_password(password.as_bytes(), &parsed_hash)
         .map_err(|_| ServerFnError::new("invalid username or password"))?;
 
+    //delete existing sessions before issuing a new one
+    sqlx::query("DELETE FROM sessions WHERE user_id = $1")
+        .bind(user_id)
+        .execute(&DATABASE)
+        .await
+        .map_err(|e| ServerFnError::new(e.to_string()))?;
+
     //session isuing
     // generating cookie
     let token = uuid::Uuid::new_v4().to_string();
     let max_age_secs = 7 * 24 * 3600; // a week
 
-    //storing session
+    //storing new session
     sqlx::query(
         "INSERT INTO sessions (token, user_id, expires_at) VALUES ($1, $2, NOW() + ($3 || ' seconds')::interval)"
     )
@@ -137,6 +146,7 @@ pub async fn user_login(
     Ok(())
 }
 
+// log out
 #[post("/api/auth/logout")]
 pub async fn user_logout() -> Result<(), ServerFnError> {
     let token = dioxus_cookie::get("session").ok_or_else(|| ServerFnError::new("No session"))?;
@@ -150,4 +160,21 @@ pub async fn user_logout() -> Result<(), ServerFnError> {
     dioxus_cookie::clear("session")?;
 
     Ok(())
+}
+
+// periodic clearing of old sessions
+#[cfg(feature = "server")]
+fn spawn_session_cleanup() {
+    tokio::spawn(async move {
+        let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(3600));
+        loop {
+            interval.tick().await;
+            if let Ok(_) = sqlx::query("DELETE FROM sessions WHERE expires_at <NOW()")
+                .execute(&*DATABASE)
+                .await
+            {
+                dioxus_logger::tracing::info!("cleaned expired sessions");
+            }
+        }
+    });
 }
