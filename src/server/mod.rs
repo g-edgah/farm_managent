@@ -1,6 +1,6 @@
 mod auth;
 
-pub use auth::register_user;
+pub use auth::{register_user, user_login};
 
 #[cfg(feature = "server")]
 use dioxus::prelude::*;

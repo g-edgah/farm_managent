@@ -46,11 +46,63 @@ pub async fn register_user(
         .await
         .map_err(|e| {
             if e.to_string().contains("duplicate key") {
-                ServerFnError::new("Username unavailable")
+                ServerFnError::new("Username unavailable");
+                dioxus_logger::tracing::info!("db error during registration: {e}");
             } else {
-                ServerFnError::new("Could not create account")
+                dioxus_logger::tracing::info!("db error during registration: {e}");
+                ServerFnError::new("Could not create account");
             }
         })?;
+
+    Ok(())
+}
+
+#[post("/api/auth/login")]
+pub async fn user_login(
+    username: String,
+    password: String,
+    remember: bool,
+) -> Result<(), ServerFnError> {
+    let username = username.trim().to_string();
+    let password = password.trim().to_string();
+
+    // input validation
+    if username.is_empty() || password.is_empty() {
+        return Err(ServerFnError::new(
+            "Username must be at least 3 characters long",
+        ));
+    }
+
+    //password hashing
+    let hash = Argon2::default()
+        .hash_password(password.as_bytes())
+        .map_err(|e| ServerFnError::new(e.to_string()))?
+        .to_string();
+
+    //database operation
+    let row: Option<(i32, String)> =
+        sqlx::query_as("SELECT password_hash FROM users WHERE username = $1")
+            .bind(&username)
+            .fetch_optional(&DATABASE)
+            .await
+            .map_err(|e| {
+                dioxus_logger::tracing::info!("db error during registration: {e}");
+                ServerFnError::new("could not complete login")
+            })?;
+
+    let (user_id, stored_hash) = match row {
+        Some(r) => r,
+        None => return Err(ServerFnError::new("invalid username or password")),
+    };
+
+    let parsed_hash = argon2::PasswordHash::new(&stored_hash)
+        .map_err(|_| ServerFnError::new("invalid username or password"))?;
+
+    argon2::Argon2::default()
+        .verify_password(password.as_bytes(), &parsed_hash)
+        .map_err(|_| ServerFnError::new("invalid username or password"))?;
+
+    //session isuing
 
     Ok(())
 }

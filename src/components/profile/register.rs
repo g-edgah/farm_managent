@@ -1,4 +1,4 @@
-use crate::server::register_user;
+use crate::server::{register_user, user_login};
 use dioxus::prelude::*;
 
 #[component]
@@ -44,6 +44,50 @@ pub fn Register() -> Element {
         spawn(async move {
             match register_user(details.username, details.password, details.confirm_password).await
             {
+                Ok(()) => {
+                    success.set(true);
+                    reg_details.set(RegDetails::default());
+                }
+                Err(e) => {
+                    error.set(Some(e.to_string()));
+                }
+            }
+            submitting.set(false);
+        });
+    };
+
+    let onsubmit_login = move |e: FormEvent| {
+        e.prevent_default();
+
+        // input validation
+        // username length
+        let details = login_details();
+
+        // if details.username.trim().len() < 3 {
+        //     error.set(Some("username must be at least 3 chaacters".into()));
+        //     return;
+        // }
+
+        // //password length
+        // if details.password.trim().len() < 8 {
+        //     error.set(Some(
+        //         "password cannot be less than 8 characters long".into(),
+        //     ));
+        //     return;
+        // }
+
+        // //password length
+        // if details.password.trim() != details.confirm_password.trim() {
+        //     error.set(Some("passwords provided do not match".into()));
+        //     return;
+        //}
+
+        //if validation checks are passed
+        error.set(None);
+        submitting.set(true);
+
+        spawn(async move {
+            match user_login(details.username, details.password, details.remember).await {
                 Ok(()) => {
                     success.set(true);
                     reg_details.set(RegDetails::default());
@@ -128,7 +172,9 @@ pub fn Register() -> Element {
                     span { class: "text-xl font-bold", "Log in" }
                 }
                 div { class: "bg-purple-200 pt-17 pb-10 px-5 w-110 rounded-md",
-                    form { class: "flex flex-col gap-10", onsubmit: onsubmit_reg,
+                    form {
+                        class: "flex flex-col gap-10",
+                        onsubmit: onsubmit_login,
                         div { class: "username flex flex-col gap-3",
 
                             span { class: "pl-1 text-lg font-semibold", "username" }
