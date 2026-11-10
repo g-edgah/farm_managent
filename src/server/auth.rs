@@ -1,5 +1,8 @@
 use dioxus::prelude::*;
 
+use dioxus_cookie::{CookieOptions, SameSite};
+use std::time::Duration;
+
 #[cfg(feature = "server")]
 use super::DATABASE;
 
@@ -103,6 +106,48 @@ pub async fn user_login(
         .map_err(|_| ServerFnError::new("invalid username or password"))?;
 
     //session isuing
+    // generating cookie
+    let token = uuid::Uuid::new_v4().to_string();
+    let max_age_secs = 7 * 24 * 3600; // a week
+
+    //storing session
+    sqlx::query(
+        "INSERT INTO sessions (token, user_id, expires_at) VALUES ($1, $2, NOW() + ($3 || ' seconds')::interval)"
+    )
+        .bind(&token)
+        .bind(user_id)
+        .bind(max_age_secs)
+        .execute(&DATABASE)
+        .await
+        .map_err(|e| ServerFnError::new("failed to save session")
+    )?;
+
+    dioxus_cookie::set(
+        "session",
+        &token,
+        &CookieOptions {
+            max_age: Some(Duration::from_secs(max_age_secs)),
+            http_only: true,             // anti xss
+            secure: true,                // https only. anti-MITM attacks
+            same_site: SameSite::Strict, // anti CSRF
+            path: "/".to_string(),
+        },
+    )?;
+
+    Ok(())
+}
+
+#[post("/api/auth/logout")]
+pub async fn user_logout() -> Result<(), ServerFnError> {
+    let token = dioxus_cookie::get("session").ok_or_else(|| ServerFnError::new("No session"))?;
+
+    sqlx::query("DELETE FROM sessions WHERE token =$1")
+        .bind(&token)
+        .execute(&*DATABASE)
+        .await
+        .map_err(|e| ServerFnError::new(e.to_string()))?;
+
+    dioxus_cookie::clear("session")?;
 
     Ok(())
 }

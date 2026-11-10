@@ -42,6 +42,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "683d7910e743518b0e34f1186f92494becacb047c7b6bf616c96772180fef923"
 
 [[package]]
+name = "android-keyring"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b051e1fab4f4c15e384424252c57321173b8fb274d50f30bd46145c35cd0a6a2"
+dependencies = [
+ "base64 0.22.1",
+ "jni 0.21.1",
+ "keyring",
+ "ndk-context",
+ "thiserror 2.0.21",
+ "tracing",
+]
+
+[[package]]
 name = "android_system_properties"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1216,6 +1230,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "20de015bc89c20f4ffc7b4f849943420308365fa66f991250b5c075261990a21"
 
 [[package]]
+name = "dioxus-cookie"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "72ab75458387b48e69d7486dc8305eb2095c6c0f2307f99937213a1a50aa8f37"
+dependencies = [
+ "android-keyring",
+ "dioxus",
+ "serde",
+ "thiserror 2.0.21",
+ "urlencoding",
+ "web-sys",
+]
+
+[[package]]
 name = "dioxus-core"
 version = "0.7.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2052,6 +2080,7 @@ version = "0.1.0"
 dependencies = [
  "argon2",
  "dioxus",
+ "dioxus-cookie",
  "dioxus-free-icons",
  "dioxus-logger 0.6.2",
  "dotenvy",
@@ -3301,6 +3330,16 @@ dependencies = [
  "bitflags 2.13.2",
  "serde",
  "unicode-segmentation",
+]
+
+[[package]]
+name = "keyring"
+version = "3.6.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eebcc3aff044e5944a8fbaf69eb277d11986064cba30c468730e8b9909fb551c"
+dependencies = [
+ "log",
+ "zeroize",
 ]
 
 [[package]]
@@ -6490,6 +6529,12 @@ dependencies = [
  "percent-encoding",
  "serde",
 ]
+
+[[package]]
+name = "urlencoding"
+version = "2.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "daf8dba3b7eb870caf1ddeed7bc9d2a049f3cfdfae7cb521b087cc33ae4c49da"
 
 [[package]]
 name = "utf-8"
