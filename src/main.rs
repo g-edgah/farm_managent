@@ -5,7 +5,7 @@ mod components;
 mod views;
 
 use components::Navbar;
-use views::{Batch, Birds, Home, Money, Settings};
+use views::{Batch, Birds, Home, Money, Profile, Settings};
 
 #[derive(Debug, Clone, Routable, PartialEq)]
 #[rustfmt::skip]
@@ -27,6 +27,9 @@ enum Route {
         
         #[route("/settings")]
         Settings {},
+
+        #[route("/profile")]
+        Profile {},
 }
 
 // We can import assets in dioxus with the `asset!` macro. This macro takes a path to an asset relative to the crate root.

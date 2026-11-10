@@ -20,11 +20,10 @@ sqlx = { version = "0.9", optional = true, default-features = false, features = 
 ] }
 tokio = { version = "1", optional = true, features = ["macros", "rt-multi-thread"] }
 dotenvy = { version = "0.15", optional = true }
-[dependencies]
-dioxus-free-icons = { version = "0.9", features = ["font-awesome-brands"] }
+dioxus-free-icons = { version = "0.10", features = ["font-awesome-brands", "font-awesome-regular"] }
 
 [features]
-default = ["web"]
+default = []
 
 web = ["dioxus/web"]
 desktop = ["dioxus/desktop"]

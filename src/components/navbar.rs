@@ -1,25 +1,58 @@
 use crate::Route;
 use dioxus::prelude::*;
+use dioxus_free_icons::icons::fa_regular_icons::FaCircleUser;
+use dioxus_free_icons::Icon;
 
-/// The Navbar component that will be rendered on all pages of our app since every page is under the layout.
-///
-///
-/// This layout component wraps the UI of [Route::Home] and [Route::Blog] in a common navbar. The contents of the Home and Blog
-/// routes will be rendered under the outlet inside this component
 #[component]
 pub fn Navbar() -> Element {
-    let batch_open = use_signal(|| false);
+    let page = use_signal(|| "home");
     rsx! {
-        div { class: "bg-purple-100 flex gap-4 px-5", id: "navbar",
-            Link { to: Route::Batch {}, "Batch" }
-            Link { to: Route::Home {}, "Home" }
-            Link { to: Route::Money {}, "Money" }
-            Link { to: Route::Birds {}, "Birds" }
-            Link { to: Route::Settings {}, "Settings" }
+        div {
+            class: "bg-purple-200 flex justify-between items-center gap-4 px-5 border-b border-gray-300 h-10",
+            id: "navbar",
+            div { class: "flex justify-between items-center gap-4 px-5",
+                Link {
+                    to: Route::Batch {},
+                    class: if page() == "batch" { "bg-purple-500 text-white" } else { "bg-gray-200 text-gray-600" },
+                    onclick: move |_| { page.set("batch") },
+                    "Batch"
+                }
+                Link {
+                    to: Route::Home {},
+                    class: if page() == "home" { "bg-purple-500 text-white" } else { "bg-gray-200 text-gray-600" },
+                    "Home"
+                }
+                Link {
+                    to: Route::Money {},
+                    class: if page() == "money" { "bg-purple-500 text-white" } else { "bg-gray-200 text-gray-600" },
+                    "Money"
+                }
+                Link {
+                    to: Route::Birds {},
+                    class: if page() == "birds" { "bg-purple-500 text-white" } else { "bg-gray-200 text-gray-600" },
+                    "Birds"
+                }
+                Link {
+                    to: Route::Settings {},
+                    class: if page() == "settings" { "bg-purple-500 text-white" } else { "bg-gray-200 text-gray-600" },
+                    "Settings"
+                }
+            }
+            div {
+                Link {
+                    to: Route::Profile {},
+                    class: if page() == "profile" { "bg-purple-500 text-white" } else { "bg-gray-200 text-gray-600" },
+
+                    Icon {
+                        width: 20,
+                        height: 20,
+                        fill: "black",
+                        icon: FaCircleUser,
+                    }
+                }
+            }
         }
 
-        // The `Outlet` component is used to render the next component inside the layout. In this case, it will render either
-        // the [`Home`] or [`Blog`] component depending on the current route.
         Outlet::<Route> {}
     }
 }

@@ -22,3 +22,6 @@ pub use settings::Settings;
 
 mod batch;
 pub use batch::Batch;
+
+mod profile;
+pub use profile::Profile;
