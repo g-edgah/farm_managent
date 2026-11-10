@@ -1,2 +1,17 @@
 mod auth;
 pub use auth::register_user;
+
+#[cfg(feature = "server")]
+use dioxus::prelude::*;
+
+#[cfg(feature = "server")]
+use dioxus::prelude::Lazy;
+
+#[cfg(feature = "server")]
+pub static DATABASE: Lazy<sqlx::PgPool> = Lazy::new(|| async move {
+    let url = std::env::var("DATABASE_URL").map_err(|e| ServerFnError::new(e.to_string()))?;
+    let pool = sqlx::PgPool::connect(&url)
+        .await
+        .map_err(|e| ServerFnError::new(e.to_string()))?;
+    dioxus::Ok(pool)
+});

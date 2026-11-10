@@ -27,15 +27,13 @@ pub async fn register_user(
     }
 
     //password hashing
-
-    let salt = SaltString::generate(&mut OsRng);
     let hash = Argon2::default()
         .hash_password(password.as_bytes())
         .map_err(|e| ServerFnError::new(e.to_string()))?
         .to_string();
 
     //database operation
-    let State(pool): Signal<sqlx::PgPool> = extract().await?;
+    let State(pool): State<sqlx::PgPool> = extract().await?;
     sqlx::query("INSERT INTO users (username, password_hash) VALUES ($1, $2)")
         .bind(&username)
         .bind(&hash)
