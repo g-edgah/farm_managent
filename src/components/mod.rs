@@ -10,3 +10,6 @@ pub use home::{Birds, Dashboard, Money};
 
 // mod settings;
 // pub use home::{};
+
+mod profile;
+pub use profile::{Details, Notifications, Privacy, Register};

@@ -1,15 +1,25 @@
 use dioxus::prelude::*;
 
+use crate::components::{Details, Notifications, Privacy, Register};
+
 #[component]
 pub fn Profile() -> Element {
-    let mut page = use_signal(|| "register");
+    #[derive(Clone, PartialEq)]
+    enum Page {
+        details,
+        notifications,
+        privacy,
+        register,
+    }
+
+    let mut page = use_signal(|| Page::register);
 
     fn tab(active: bool) -> String {
-        let base = "w-35 rounded-md h-10 flex items-center justify-center text-lg";
+        let base = "w-35 rounded-md h-10 flex items-center justify-center text-lg cursor-pointer";
         if active {
-            format!("{base} bg-purple-500 text-white")
+            format!("{base} bg-purple-100 border border-gray-300")
         } else {
-            format!("{base} bg-gray-200")
+            format!("{base}")
         }
     }
 
@@ -19,41 +29,51 @@ pub fn Profile() -> Element {
 
                 div { class: " flex flex-col gap-5 ",
                     div {
-                        class: tab(page() == "register"),
-                        onclick: move |_| { page.set("registery") },
-                        if page() == "register" {
-                            "Login/register"
-                        }
+                        class: tab(page() == Page::details),
+                        onclick: move |_| { page.set(Page::details) },
+                        "profile"
+
                     }
 
                     div {
-                        class: tab(page() == "register"),
-                        onclick: move |_| { page.set("y") },
-                        "Login/register"
+                        class: tab(page() == Page::notifications),
+                        onclick: move |_| { page.set(Page::notifications) },
+                        "notifications"
                     }
 
                     div {
-                        class: tab(page() == "register"),
-                        onclick: move |_| { page.set("registery") },
-                        "Login/register"
+                        class: tab(page() == Page::privacy),
+                        onclick: move |_| { page.set(Page::privacy) },
+                        "privacy"
                     }
                 }
 
                 div { class: "",
 
                     div {
-                        class: "mb-100 bg-purple-100 w-35 rounded-md border border-gray-300  h-10 flex items-center justify-center text-lg",
-                        onclick: move |_| { page.set("register") },
+                        class: format!("{} mb-100", tab(page() == Page::register)),
+                        onclick: move |_| { page.set(Page::register) },
                         "Login/register"
-
                     }
                 }
 
             }
 
-            div { class: "main w-full h-full ",
-                div { class: "profile_pic" }
-                span { class: "profile_name" }
+            div { class: "main w-full h-full flex justify-center items-center",
+                match page() {
+                    Page::details => rsx! {
+                        Details {}
+                    },
+                    Page::notifications => rsx! {
+                        Notifications {}
+                    },
+                    Page::privacy => rsx! {
+                        Privacy {}
+                    },
+                    Page::register => rsx! {
+                        Register {}
+                    },
+                }
             }
         }
     }
