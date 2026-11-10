@@ -1,3 +1,4 @@
+use super::DATABASE;
 use argon2::{Argon2, PasswordHasher};
 use dioxus::prelude::*;
 
@@ -33,11 +34,11 @@ pub async fn register_user(
         .to_string();
 
     //database operation
-    let State(pool): State<sqlx::PgPool> = extract().await?;
+
     sqlx::query("INSERT INTO users (username, password_hash) VALUES ($1, $2)")
         .bind(&username)
         .bind(&hash)
-        .execute(&pool)
+        .execute(&*DATABASE)
         .await
         .map_err(|e| {
             if e.to_string().contains("duplicate key") {
