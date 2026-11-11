@@ -10,6 +10,9 @@ use std::time::Duration;
 use super::DATABASE;
 
 #[cfg(feature = "server")]
+use crate::server::models::User;
+
+#[cfg(feature = "server")]
 use argon2::{Argon2, PasswordHasher, PasswordVerifier};
 
 // register
@@ -73,6 +76,8 @@ pub async fn user_login(
     let username = username.trim().to_string();
     let password = password.trim().to_string();
 
+    dioxus_logger::tracing::info!("logging in user: {username}");
+
     // input validation
     if username.is_empty() || password.is_empty() {
         return Err(ServerFnError::new(
@@ -87,15 +92,16 @@ pub async fn user_login(
         .to_string();
 
     //database operation
-    let row: Option<(i32, String)> =
-        sqlx::query_as("SELECT password_hash FROM users WHERE username = $1")
-            .bind(&username)
-            .fetch_optional(&*DATABASE)
-            .await
-            .map_err(|e| {
-                dioxus_logger::tracing::info!("db error during registration: {e}");
-                ServerFnError::new("could not complete login")
-            })?;
+    let row: Option<(i32, String)> = sqlx::query_as::<_, (i32, String)>(
+        "SELECT id, password_hash FROM users WHERE username = $1",
+    )
+    .bind(&username)
+    .fetch_optional(&*DATABASE)
+    .await
+    .map_err(|e| {
+        dioxus_logger::tracing::info!("db error during login: {e}");
+        ServerFnError::new("could not complete login")
+    })?;
 
     let (user_id, stored_hash) = match row {
         Some(r) => r,
@@ -111,12 +117,13 @@ pub async fn user_login(
 
     //delete existing sessions before issuing a new one
     sqlx::query("DELETE FROM sessions WHERE user_id = $1")
-        .bind(user_id)
+        .bind(&user_id)
         .execute(&*DATABASE)
         .await
         .map_err(|e| ServerFnError::new(e.to_string()))?;
 
-    //session isuing
+    dioxus_logger::tracing::info!("here");
+    //session issuing
     // generating cookie
     let token = uuid::Uuid::new_v4().to_string();
     let max_age_secs: i64 = 7 * 24 * 3600; // a week
@@ -126,7 +133,7 @@ pub async fn user_login(
         "INSERT INTO sessions (token, user_id, expires_at) VALUES ($1, $2, NOW() + ($3 || ' seconds')::interval)"
     )
         .bind(&token)
-        .bind(user_id)
+        .bind(&user_id)
         .bind(max_age_secs)
         .execute(&*DATABASE)
         .await

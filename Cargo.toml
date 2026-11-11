@@ -26,6 +26,7 @@ web-sys = "0.3"
 dioxus-logger = "0.6"
 dioxus-cookie = { version = "0.2", features = ["server"], optional=true }
 uuid = { version = "1.29.2", features = ["v4", "serde"], optional=true }
+chrono = { version = "0.4", features = ["serde"], optional = true }
 
 [features]
 default = []
@@ -33,4 +34,4 @@ default = []
 web = ["dioxus/web"]
 desktop = ["dioxus/desktop"]
 mobile = ["dioxus/mobile"]
-server = ["dioxus/server", "dep:sqlx", "dep:tokio", "dep:dotenvy", "dep:argon2", "dep:uuid", "dep:dioxus-cookie"]
+server = ["dioxus/server", "dep:sqlx", "dep:tokio", "dep:dotenvy", "dep:argon2", "dep:uuid", "dep:dioxus-cookie", "dep:chrono"]

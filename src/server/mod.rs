@@ -3,6 +3,18 @@ mod auth;
 pub use auth::{register_user, user_login, user_logout};
 
 #[cfg(feature = "server")]
+mod middleware;
+
+#[cfg(feature = "server")]
+pub use middleware::get_current_user;
+
+#[cfg(feature = "server")]
+mod models;
+
+#[cfg(feature = "server")]
+pub use models::User;
+
+#[cfg(feature = "server")]
 pub use auth::spawn_session_cleanup;
 
 #[cfg(feature = "server")]
