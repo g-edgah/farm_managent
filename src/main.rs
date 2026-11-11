@@ -30,7 +30,7 @@ enum Route {
         Settings {},
 
         #[route("/profile")]
-        Profile {},
+        Profile { current: String },
 }
 
 // We can import assets in dioxus with the `asset!` macro. This macro takes a path to an asset relative to the crate root.

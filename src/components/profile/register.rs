@@ -1,8 +1,12 @@
 use crate::server::{register_user, user_login};
 use dioxus::prelude::*;
 
+use crate::Route;
+
 #[component]
 pub fn Register() -> Element {
+    let navigator = use_navigator();
+
     let mut page = use_signal(|| "register");
     let mut register = use_signal(|| "");
     let mut login_details = use_signal(|| LoginDetails::default());
@@ -13,6 +17,7 @@ pub fn Register() -> Element {
 
     let onsubmit_reg = move |e: FormEvent| {
         e.prevent_default();
+        let navigator = navigator;
 
         // input validation
         // username length
@@ -47,6 +52,8 @@ pub fn Register() -> Element {
                 Ok(()) => {
                     success.set(true);
                     reg_details.set(RegDetails::default());
+
+                    page.set("login");
                 }
                 Err(e) => {
                     error.set(Some(e.to_string()));
@@ -58,6 +65,7 @@ pub fn Register() -> Element {
 
     let onsubmit_login = move |e: FormEvent| {
         e.prevent_default();
+        let navigator = navigator;
 
         // input validation
         // username length
@@ -91,6 +99,8 @@ pub fn Register() -> Element {
                 Ok(()) => {
                     success.set(true);
                     reg_details.set(RegDetails::default());
+
+                    navigator.push(Route::Home {});
                 }
                 Err(e) => {
                     error.set(Some(e.to_string()));

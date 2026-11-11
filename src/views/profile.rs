@@ -2,17 +2,29 @@ use dioxus::prelude::*;
 
 use crate::components::{Details, Notifications, Privacy, Register};
 
-#[component]
-pub fn Profile() -> Element {
-    #[derive(Clone, PartialEq)]
-    enum Page {
-        details,
-        notifications,
-        privacy,
-        register,
-    }
+#[derive(Clone, PartialEq)]
+enum Page {
+    details,
+    notifications,
+    privacy,
+    register,
+}
 
-    let mut page = use_signal(|| Page::register);
+impl Page {
+    fn parse(s: &str) -> Option<Self> {
+        match s.to_string().as_str() {
+            "details" => Some(Page::details),
+            "notifications" => Some(Page::notifications),
+            "privacy" => Some(Page::privacy),
+            "register" => Some(Page::register),
+            _ => None,
+        }
+    }
+}
+
+#[component]
+pub fn Profile(current: String) -> Element {
+    let mut page = use_signal(|| Page::parse(&current).unwrap_or(Page::register));
 
     fn tab(active: bool) -> String {
         let base = "w-35 rounded-md h-10 flex items-center justify-center text-lg cursor-pointer";

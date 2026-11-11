@@ -44,7 +44,9 @@ pub fn Navbar() -> Element {
             }
             div { class: "flex justify-between items-center gap-4 px-5 h-full",
                 Link {
-                    to: Route::Profile {},
+                    to: Route::Profile {
+                        current: "details".to_string(),
+                    },
                     class: if page() == "profile" { "bg-purple-100 text-black h-full text-center flex items-center justify-center px-1" } else { "px-1 text-black h-full text-center flex items-center justify-center" },
                     onclick: move |_| { page.set("profile") },
 
